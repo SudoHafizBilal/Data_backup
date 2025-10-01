@@ -1,0 +1,83 @@
+yosys 
+
+read_liberty -lib /foss/pdks/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+
+
+read_verilog -sv /foss/designs/fir/rtl/fir_chip.sv
+read_verilog -sv /foss/designs/fir/rtl/fir.sv
+read_verilog -sv /foss/designs/fir/rtl/adder.sv
+read_verilog -sv /foss/designs/fir/rtl/multiplier.sv
+read_verilog -sv /foss/designs/fir/rtl/dq.sv
+
+hierarchy -top fir_chip
+
+/foss/pdks/ihp-sg13g2/libs.ref/sg13g2_io/lib/sg13g2_io_typ_1p2V_3p3V_25C.lib
+
+/foss/pdks/ihp-sg13g2/libs.ref/sg13g2_sram/lib/RM_IHPSG13_1P_64x64_c2_bm_bist_typ_1p20V_25C.lib
+
+dfflibmap -liberty /foss/pdks/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+
+abc -liberty /foss/pdks/sky130A/libs.ref/sky130_fd_sc_hd/lib/sky130_fd_sc_hd__tt_025C_1v80.lib
+
+synth -top fir_chipls
+
+
+
+###########################################################
+
+ Define design variable for clock period (10,000 ps = 100 MHz)
+set period_ps 10000
+
+# Run Yosys commands
+yosys -p {
+
+        # Load standard-cell library
+        read_liberty -lib /foss/pdks/ihp-sg13g2/libs.ref/sg13g2_stdcell/lib/sg13g2_stdcell_typ_1p20V_25C.lib
+
+        # Load RTL files
+        read_verilog -sv /foss/designs/fir/rtl/fir_chip.sv
+        read_verilog -sv /foss/designs/fir/rtl/fir.sv
+        read_verilog -sv /foss/designs/fir/rtl/adder.sv
+        read_verilog -sv /foss/designs/fir/rtl/multiplier.sv
+        read_verilog -sv /foss/designs/fir/rtl/dq.sv
+
+        # Set top module
+        hierarchy -top fir_chip
+
+        # Load I/O library
+        read_liberty -lib /foss/pdks/ihp-sg13g2/libs.ref/sg13g2_io/lib/sg13g2_io_typ_1p2V_3p3V_25C.lib
+
+        # Synthesis passes
+
+        check
+        opt -noff
+        fsm
+        stat
+        wreduce
+        share
+        peepopt
+        opt -full
+        memory
+        opt_dff
+        stat
+
+        # Map design to technology library
+        synth -top fir_chip
+
+        # Export gate-level Verilog
+        write_verilog fir_chip_gate.v
+
+}
+##########################################################
+# lab_11.tcl
+set path_to_task_10 "/foss/designs/lab_1/task_10.tcl"
+
+# Run the old script
+source $path_to_task_10
+
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~                                                                                                                                                                                      
+~       
